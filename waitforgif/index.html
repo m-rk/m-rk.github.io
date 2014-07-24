@@ -1,0 +1,77 @@
+<html>
+<head>
+<title>WAIT FOR GIF</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="https://raw.github.com/padolsey/jQuery-Plugins/master/cross-domain-ajax/jquery.xdomainajax.js"></script>
+<script>
+$(function() {
+
+    window.loadGif = function() {
+        var numFirst = 982001; // gifbin's first ID (arbitrary?)
+        var numRange = 4721; // as of 26/05/12, supposedly increments 1 per day
+        var gifId = Math.floor(Math.random() * numRange) + numFirst;
+        $.ajax({
+            url: 'http://www.gifbin.com/f/' + gifId,
+            type: 'GET',
+            dataType: 'text',
+            crossDomain: 'true',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function(data) {
+                var matches = data.responseText.match(/^.+<img.+?src="(.+?)".+$/m);
+                if (matches.length > 1) {
+                    var img = matches[1];
+                    if (img.substr(img.lastIndexOf(".") + 1) == 'gif') {
+                        $('.gifLoader').html('<img src="' + img + '" />');
+                        window.setTimeout('window.deployGif()', 30000);
+                    } else {
+                        window.setTimeout('window.loadGif()', 2000);
+                    }
+                } else {
+                    window.setTimeout('window.loadGif()', 2000);
+                }
+            }
+        });
+    };
+    
+    window.deployGif = function() {
+        $('.gifLoader').removeClass('gifLoader').addClass('gifWait');
+        $('.gif').hide().removeClass('gif').addClass('gifLoader').show();
+        $('.gifWait').removeClass('gifWait').addClass('gif');
+        window.loadGif();
+    }
+    
+    window.loadGif();
+    
+    var height = Math.round($('.gif').height() / 4);
+    $('.gif').css({ fontSize: height + 'px' });
+
+});
+</script>
+<style>
+body {
+    margin: 0; padding: 0;
+    font: bold 50px Consolas, Monaco, 'Courier New', monospace;
+}
+.gif, .gif img {
+    position: absolute;
+    height: 100%; width: 100%;
+    z-index: 1;
+}
+.gifLoader {
+    position: absolute; left: 10px; bottom: 10px;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.5);
+}
+.gifLoader img {
+    height: 50px; width: 50px;
+    border: 2px solid rgba(0, 0, 0, 0.5);
+}
+</style>
+</head>
+<body>
+<div id="gif1" class="gif"><div style="padding: 0.2em; line-height: 0.8em; background: #fab;">WAIT FOR GIF</div></div>
+<div id="gif2" class="gifLoader"></div>​
+</body>
+</html>
