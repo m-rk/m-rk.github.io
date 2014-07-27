@@ -6,7 +6,30 @@
 <script>
 $(function() {
 
-    window.loadGif = function() {
+    window.load_bees_bombs = function() {
+        $.ajax({
+            url: 'http://beesandbombs.tumblr.com/rss',
+            type: 'GET',
+            dataType: 'text',
+            crossDomain: 'true',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function(data) {
+                var urls = [];
+                var RE = /src="(.+?\.gif)"/g;
+                var match = RE.exec(data.responseText);
+                while (match != null) {
+                    urls.push(match[1]);
+                    match = RE.exec(data.responseText);
+                }
+                $('.gifLoader').html('<img src="' + urls[0] + '" />');
+                window.setInterval(window.deploy_random_gif, 30000, urls);
+            }
+        });  
+    }
+
+    window.load_gifbin = function() {
         var numFirst = 982001; // gifbin's first ID (arbitrary?)
         var numRange = 4721; // as of 26/05/12, supposedly increments 1 per day
         var gifId = Math.floor(Math.random() * numRange) + numFirst;
@@ -24,26 +47,36 @@ $(function() {
                     var img = matches[1];
                     if (img.substr(img.lastIndexOf(".") + 1) == 'gif') {
                         $('.gifLoader').html('<img src="' + img + '" />');
-                        window.setTimeout('window.deployGif()', 30000);
+                        window.setTimeout('window.deploy_gifbin()', 30000);
                     } else {
-                        window.setTimeout('window.loadGif()', 2000);
+                        window.setTimeout('window.load_gifbin()', 2000);
                     }
                 } else {
-                    window.setTimeout('window.loadGif()', 2000);
+                    window.setTimeout('window.load_gifbin()', 2000);
                 }
             }
         });
     };
     
-    window.deployGif = function() {
+    window.deploy_gifbin = function() {
         $('.gifLoader').removeClass('gifLoader').addClass('gifWait');
         $('.gif').hide().removeClass('gif').addClass('gifLoader').show();
         $('.gifWait').removeClass('gifWait').addClass('gif');
-        window.loadGif();
+        window.load_gifbin();
     }
     
-    window.loadGif();
-    
+    window.deploy_random_gif = function(urls) {
+        console.log('deploy_random_gif');
+        var url = urls[Math.floor(Math.random() * urls.length)];
+        $('.gifLoader').removeClass('gifLoader').addClass('gifWait');
+        $('.gif').hide().removeClass('gif').addClass('gifLoader').show();
+        $('.gifWait').removeClass('gifWait').addClass('gif');
+        $('.gifLoader').html('<img src="' + url + '" />');
+    }
+
+    // window.load_gifbin();
+    window.load_bees_bombs();
+
     var height = Math.round($('.gif').height() / 4);
     $('.gif').css({ fontSize: height + 'px' });
 
@@ -52,7 +85,7 @@ $(function() {
 <style>
 body {
     margin: 0; padding: 0;
-    font: bold 50px Consolas, Monaco, 'Courier New', monospace;
+    font: bold 20vh/1 Consolas, Monaco, 'Courier New', monospace;
 }
 .gif, .gif img {
     position: absolute;
@@ -71,7 +104,7 @@ body {
 </style>
 </head>
 <body>
-<div id="gif1" class="gif"><div style="padding: 0.2em; line-height: 0.8em; background: #fab;">WAIT FOR GIF</div></div>
+<div id="gif1" class="gif"><div style="padding: 0.2em; background: #fab;">WAIT FOR GIF</div></div>
 <div id="gif2" class="gifLoader"></div>​
 </body>
 </html>
